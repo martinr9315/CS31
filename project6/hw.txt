@@ -1,0 +1,211 @@
+Roxane Martin
+Professor Smallberg
+CS 31
+Project 6
+
+1a)
+ORIGINAL:
+      int main()
+    	 {
+        int arr[3] = { 5, 10, 15 };
+        int* ptr = arr;
+
+        *ptr = 30;          
+        *ptr + 1 = 20;     	 //bug: should be *(ptr + 1)
+        ptr += 2;
+        ptr[0] = 10;
+
+        while (ptr >= arr)	//since printing backwards, flip values of arr[0] and arr[2]
+        {
+            ptr--;		//bug: should be after cout
+            cout << *ptr << endl;    
+        }
+    	}
+
+	FIXED:
+    int main()
+    {
+        int arr[3] = { 5, 10, 15 };
+        int* ptr = arr;
+
+        *ptr = 10;          // set arr[0] to 10
+        *(ptr + 1) = 20;    // set arr[1] to 20
+        ptr += 2;
+        ptr[0] = 30;        // set arr[2] to 30
+
+        while (ptr >= arr)
+        {
+            cout << *ptr << endl;    // print values
+            ptr--;
+        }
+    }
+
+1b) This function doesn't work because the pointer in the function definition is passed by value, not by reference, so the assingment of the maximum value's location is to a copy of the original pointer, not the pointer itself.
+    The solution is to add a & before pToMax in the first line so it is:
+    void findMax(int arr[], int n, int* &pToMax)
+ 
+FIXED:
+
+    void findMax(int arr[], int n, int* &pToMax)
+    {
+        if (n <= 0)
+            return;      // no items, no maximum!
+    
+        pToMax = arr;
+
+        for (int i = 1; i < n; i++)
+        {
+            if (arr[i] > *pToMax)
+                 pToMax = arr + i;
+        }
+    }
+
+    int main()
+    {
+        int nums[4] = { 5, 3, 15, 6 };
+        int* ptr;
+
+        findMax(nums, 4, ptr);
+        cout << "The maximum is at address " << ptr << endl;
+        cout << "It's at position " << ptr - nums << endl;
+        cout << "Its value is " << *ptr << endl;
+    }
+
+1c) This function doesn't work because the pointer in the main function is never assigned a location to point to, so when *ncubed tries to access this location, there is no defined place for it to store the value of ncubed.
+ The solution is to initialize a new variable (that I am calling result) and assigning ptr to the address of this variable. The fixed main function is:
+
+    void computeCube(int n, int* ncubed)
+    {
+        *ncubed = n * n * n;
+    }
+
+    int main()
+    {
+        int result = 0;
+        int* ptr = &result;
+        computeCube(5, ptr);
+        cout << "Five cubed is " << *ptr << endl;
+    }
+
+1d) This function doesn't work because the two memory locations of str1 and str2 are being compared rather than the characters at those locations, so the result is always false.
+My solution to this problem is explained in the comments of the corrected code below:
+
+         bool strequal(const char* str1, const char* str2) //make function arguments const char* str1 instead of char str1[]; pointers to characters instead of c strings
+         {
+             while (*str1 != 0  &&  *str2 != 0) //check if pointer to either c string is pointing to a null byte
+             {
+                 if (*str1 != *str2)  // compare the characters at the location each of the pointers is pointing to
+                     return false;
+                 str1++;            // advance pointers to point to the next characters
+                 str2++;
+             }
+             return *str1==*str2;   // check that both pointers are pointing to the null byte
+         }
+
+         int main()
+         {
+             char a[15] = "Chen";
+             char b[15] = "Cheng";
+             
+             char* ptr_a = a; //generate pointers to the c strings a and b
+             char* ptr_b = b;
+             
+             if (strequal(ptr_a, ptr_b)) //call strequal with pointers to a and b rather than directly the c strings a and b
+                 cout << "They're the same person!\n";
+         }
+
+1e) The program incorrectly declares and fills anArray only within the scope of getPtrToArray, so when the main function attempts to use ptr to access values in that array, they have already been destroyed or overwritten by f();
+For each of the following parts, write a single C++ statement that performs the indicated task. For each part, assume that all previous statements have been executed (e.g., when doing part e, assume the statements you wrote for parts a through d have been executed).
+
+2)
+	a) double* cat;
+	b) double mouse[5];
+	c) cat = mouse+4;
+	d) *cat = 25;
+	e) *(mouse+3)=54;
+	f) cat -= 3;
+	g) cat[1] = 27;
+	h) cat[0] = 42;
+	i) bool b = (*cat == *(cat+1));
+	j) bool d = (*cat == mouse[0]);
+    
+3)
+	a)
+		double mean(const double* scores, int numScores)
+		{
+   			double tot = 0;
+    			for (int i=0; i<numScores; i++)
+        		tot += *(scores+i);
+    			return tot/numScores;
+		}
+	b) 
+		const char* findTheChar1(const char* str, char chr)
+    		{
+        		for (int k = 0; *str != 0; k++)
+            		if (*(str+k) == chr)
+                		return str+k;
+
+        		return nullptr;
+    		}
+	
+	c) 
+ 		const char* findTheChar2(const char* str, char chr)
+ 		{
+     		while (*str != 0)
+     		{
+         		if (*str == chr)
+             		return str;
+         		str++;
+     		}
+			return nullptr;
+ 		}
+
+4)
+ 
+ The output of this program is:
+ 3 
+ 4
+ 79
+ -1
+ 9
+ 22
+ 19
+
+The comments below explain exactly why each line of the output is printed:
+ 
+  		int array[6] = { 5, 3, 4, 17, 22, 19 }; //The array is initialized as { 5, 3, 4, 17, 22, 19 }
+
+      	int* ptr = maxwell(array, &array[2]); //Then pointer is initialized to point to the larger value between the first and third elements of array, which is the first element.
+        *ptr = -1; //The first element of the array is set to -1. Now the array is { -1, 3, 4, 17, 22, 19 }
+        ptr += 2; //Next the pointer is moved forward by 2, so it points to the 3rd element of the array.
+        ptr[1] = 9; //The element one after where the pointer currently points (the 4th element) is set to 9 and the element one after where the array begins (the 1st element) is set to 79.
+        *(array+1) = 79; //The array now is { -1, 79, 4, 9, 22, 19 }
+
+        cout << &array[5] - ptr << endl; //The 'distance' between the sixth element of array and the pointer's current location (still the 3rd element) is output: 3.
+
+        swap1(&array[0], &array[1]); //The pointers to the first and second elements of array are swapped, changing nothing in the array.
+        swap2(array, &array[2]); //The values of the first and third elements of array are swapped, so the array now is { 4, 3, -1, 17, 22, 19 }.
+
+        for (int i = 0; i < 6; i++) //The array is printed vertically.
+            cout << array[i] << endl;
+
+5)
+void removeS(char* str)
+{
+    while (*str != 0)
+    {
+        if (*str == 's' || *str == 'S')
+        {
+            char* shift = str+1;
+            do
+            {
+                *(shift-1) = *shift;
+                shift++;
+            }  while (*(shift-1) != 0);
+        }
+        else
+            str++;
+    }
+    
+}
+
